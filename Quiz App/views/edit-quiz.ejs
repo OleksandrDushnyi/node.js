@@ -1,0 +1,214 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz app</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quattrocento+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #3f4243, #bebec0);
+            padding-top: 80px;
+            min-height: 100vh;
+            font-size: 16px;
+            color: #ddddf0;
+        }
+
+        nav {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            display: flex;
+            justify-content: center;
+            background-color: rgba(106, 106, 115, 0.7);
+            border-bottom: 2px solid #1f1e1e;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav ul {
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        nav li {
+            list-style: none;
+        }
+
+        nav a {
+            min-height: 60px;
+            display: block;
+            padding: 5px 70px;
+            line-height: 60px;
+            font-family: "Quattrocento Sans", sans-serif;
+            font-weight: 600;
+            color: #c6c6df;
+            font-size: 22px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .quizes {
+            padding: 15px;
+        }
+
+        
+        form {
+    display: flex;
+    flex-direction: column; /* Елементи відображаються в стовпці */
+}
+
+form div {
+    margin-bottom: 20px;
+}
+
+.answer, input,
+textarea {
+    min-height: 30px;
+    border: 1px solid #000;
+    background-color: rgba(0,0,0,0.4);
+    color: #fff;
+    font-size: 18px;
+    padding: 3px 5px;
+    outline: none;
+}
+
+textarea {
+    resize: none;
+    max-height: 50px;
+    max-width: 100px;
+}
+
+.form-button {
+    display: flex;
+    gap: 20px; /* Відступ між елементами */
+}
+
+.form-button input {
+    text-transform: uppercase;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.form-button input:hover {
+    background-color: rgba(46, 43, 43, 0.6);
+}
+
+
+
+.answer {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column; /* Розмістити елементи у власному стовпці */
+    max-width: 300px;
+    padding-top: 10px;
+}
+
+
+
+    </style>
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/quizes">Quizes</a></li>
+        <li><a href="/add-quiz">New Quiz</a></li>
+    </ul>
+</nav>
+
+<h1>Welcome to create Quiz App</h1>
+
+<form id="quiz-form" method="post" action="/add-quiz">
+    <div class="form-info">
+        <label>Quiz Name:</label>
+        <!-- Вставка поля name з EJS -->
+        <input type="text" name="name" >
+    </div>
+    <div id="questions-container">
+        <!-- Питання та відповіді будуть додаватись тут динамічно -->
+    </div>
+    <div class="form-button">
+        <button type="button" id="add-question">Add Question</button>
+        <button type="button" id="remove-question">Remove Last Question</button>
+        <button type="submit">Submit</button> <!-- Змінено на кнопку типу "submit" -->
+    </div>
+</form>
+
+
+
+<div id="question"></div>
+<div id="answer-buttons"></div>
+<button id="next-btn" style="display: none;">Next</button>
+<script>
+    const addQuestionBtn = document.getElementById('add-question');
+    const removeQuestionBtn = document.getElementById('remove-question');
+    const questionsContainer = document.getElementById('questions-container');
+
+    addQuestionBtn.addEventListener('click', addQuestion);
+    removeQuestionBtn.addEventListener('click', removeQuestion);
+
+    function addQuestion() {
+        const questionDiv = document.createElement('div');
+        questionDiv.classList.add('form-text', 'question');
+
+        const questionInput = document.createElement('input');
+        questionInput.setAttribute('type', 'text');
+        questionInput.setAttribute('name', `questions[${questionsContainer.children.length}][question]`);
+        questionInput.setAttribute('placeholder', 'Enter Question');
+        questionDiv.appendChild(questionInput);
+
+        for (let i = 1; i <= 4; i++) {
+            const answerDiv = document.createElement('div');
+            answerDiv.classList.add('form-text', 'answer');
+
+            const answerInput = document.createElement('input');
+            answerInput.setAttribute('type', 'text');
+            answerInput.setAttribute('name', `questions[${questionsContainer.children.length}][answers][${i - 1}][text]`);
+            answerInput.setAttribute('placeholder', `Answer ${i}`);
+            answerDiv.appendChild(answerInput);
+
+            const correctCheckbox = document.createElement('input');
+            correctCheckbox.setAttribute('type', 'checkbox');
+            correctCheckbox.setAttribute('name', `questions[${questionsContainer.children.length}][answers][${i - 1}][correct]`);
+            correctCheckbox.setAttribute('value', 'true'); 
+            correctCheckbox.setAttribute('id', `correct-${questionsContainer.children.length}-${i}`);
+            const correctLabel = document.createElement('label');
+            correctLabel.setAttribute('for', `correct-${questionsContainer.children.length}-${i}`);
+            correctLabel.textContent = 'Correct';
+            answerDiv.appendChild(correctCheckbox);
+            answerDiv.appendChild(correctLabel);
+
+            questionDiv.appendChild(answerDiv);
+        }
+
+        questionsContainer.appendChild(questionDiv);
+    }
+
+    function removeQuestion() {
+        const lastQuestion = questionsContainer.lastElementChild;
+        if (lastQuestion) {
+            questionsContainer.removeChild(lastQuestion);
+        }
+    }
+</script>
+<!-- <script src="../script.js"></script> -->
+
+
+</body>
+</html>
